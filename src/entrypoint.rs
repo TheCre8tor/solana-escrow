@@ -15,6 +15,6 @@ fn process_instruction(
         accounts.len(),
         instruction_data
     );
-    
+
     Ok(())
 }
