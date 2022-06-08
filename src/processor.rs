@@ -3,7 +3,9 @@ use solana_program::{
     entrypoint::ProgramResult,
     msg,
     program_error::ProgramError,
+    program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
+    sysvar::{rent::Rent, Sysvar},
 };
 use spl_token;
 
@@ -11,7 +13,7 @@ use spl_token;
 // use crate::instruction::EscrowInstruction;
 // use crate::error::EscrowError;
 
-use crate::{error::EscrowError, instruction::EscrowInstruction};
+use crate::{error::EscrowError, instruction::EscrowInstruction, state::Escrow};
 
 pub struct Processor;
 
@@ -36,16 +38,6 @@ impl Processor {
         amount: u64,
         program_id: &Pubkey,
     ) -> ProgramResult {
-        use solana_program::{
-            account_info::{next_account_info, AccountInfo},
-            entrypoint::ProgramResult,
-            msg,
-            program_error::ProgramError,
-            program_pack::{IsInitialized, Pack},
-            pubkey::Pubkey,
-            sysvar::{rent::Rent, Sysvar},
-        };
-
         let account_info_iter = &mut accounts.iter();
 
         let initializer = next_account_info(account_info_iter)?;
@@ -63,6 +55,7 @@ impl Processor {
         }
 
         let escrow_account = next_account_info(account_info_iter)?;
+
         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
 
         if !rent.is_exempt(escrow_account.lamports(), escrow_account.data_len()) {
